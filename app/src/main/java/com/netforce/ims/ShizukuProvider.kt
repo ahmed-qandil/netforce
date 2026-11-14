@@ -1,25 +1,35 @@
 package com.netforce.ims
 
+import android.app.IActivityManager
+import android.app.IInstrumentationWatcher
+import android.app.UiAutomationConnection
 import android.content.ComponentName
 import android.content.Context
-import android.content.ServiceConnection
 import android.content.pm.ApplicationInfo
 import android.os.Bundle
-import android.os.IBinder
+import android.os.ServiceManager
+import android.telephony.SubscriptionInfo
 import android.util.Log
 import com.netforce.ims.model.SimSelection
 import com.netforce.ims.model.ApnDraftConfig
+import com.netforce.ims.privileged.ApnModifier
+import com.netforce.ims.privileged.BrokerInstrumentation
+import com.netforce.ims.privileged.CaptivePortalFixer
+import com.netforce.ims.privileged.ConfigReader
+import com.netforce.ims.privileged.ImsResetter
+import com.netforce.ims.privileged.ImsStatusReader
 import com.netforce.ims.privileged.ImsModifier
-import com.netforce.ims.privileged.PrivilegedOps
-import com.netforce.ims.privileged.PrivilegedService
+import com.netforce.ims.privileged.PersistentVolteModifier
+import com.netforce.ims.privileged.SimReader
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.lsposed.hiddenapibypass.LSPass
-import rikka.shizuku.Shizuku
+import rikka.shizuku.ShizukuBinderWrapper
 import rikka.shizuku.ShizukuProvider
 
 class ShizukuProvider : ShizukuProvider() {
@@ -36,21 +46,14 @@ class ShizukuProvider : ShizukuProvider() {
                 Log.w(TAG, "HiddenApiBypass.addHiddenApiExemptions failed", t2)
             }
         }
+        // 不再自动触发，只在用户手动点击"应用配置"时才执行
         return super.onCreate()
     }
 
     companion object {
         private const val TAG = "ShizukuProvider"
-        private const val BIND_TIMEOUT_MS = 10_000L
-
-        private val serviceMutex = Mutex()
-
-        // Cached live binder to the privileged UserService process; null forces a rebind.
-        @Volatile
-        private var cachedService: INetForceService? = null
-
-        @Volatile
-        private var pendingBind: CompletableDeferred<INetForceService?>? = null
+        private const val INSTRUMENTATION_RESULT_TIMEOUT_MS = 15_000L
+        private val instrumentationMutex = Mutex()
 
         data class CaptivePortalConfig(
             val httpUrl: String,
@@ -59,147 +62,42 @@ class ShizukuProvider : ShizukuProvider() {
             val isOverridden: Boolean,
         )
 
-        // ---------------------------------------------------------- transport
-
-        /**
-         * Runs one op in the privileged UserService process (shell uid).
-         *
-         * On Android 10, self-instrumentation always force-stops this UI process
-         * (INSTR_FLAG_NO_RESTART does not exist there), so all privileged work is
-         * delegated to a Shizuku UserService instead. Returns the result Bundle,
-         * or null when the service cannot be reached.
-         */
-        private suspend fun executePrivileged(
-            context: Context,
-            op: String,
-            args: Bundle?,
-        ): Bundle? {
-            val service = bindPrivilegedService(context) ?: return null
-            return withContext(Dispatchers.IO) {
-                try {
-                    service.execute(op, args)?.apply {
-                        classLoader = PrivilegedOps::class.java.classLoader
-                    }
-                } catch (t: Throwable) {
-                    Log.e(TAG, "privileged op $op failed at transport level", t)
-                    cachedService = null
-                    null
-                }
-            }
-        }
-
-        private val connection = object : ServiceConnection {
-            override fun onServiceConnected(name: ComponentName, binder: IBinder?) {
-                val service = if (binder != null && binder.pingBinder()) {
-                    INetForceService.Stub.asInterface(binder)
-                } else null
-                if (service == null) {
-                    Log.w(TAG, "privileged service connected with dead binder")
-                } else {
-                    Log.i(TAG, "privileged service connected")
-                }
-                cachedService = service
-                pendingBind?.complete(service)
-            }
-
-            override fun onServiceDisconnected(name: ComponentName) {
-                Log.w(TAG, "privileged service disconnected")
-                cachedService = null
-            }
-        }
-
-        private fun newUserServiceArgs(context: Context): Shizuku.UserServiceArgs =
-            Shizuku.UserServiceArgs(
-                ComponentName(context.packageName, PrivilegedService::class.java.name)
-            )
-                .daemon(false)
-                .processNameSuffix("privileged")
-                .debuggable(BuildConfig.DEBUG)
-                .version(BuildConfig.VERSION_CODE)
-
-        private suspend fun bindPrivilegedService(context: Context): INetForceService? {
-            if (!Shizuku.pingBinder()) {
-                Log.w(TAG, "bindPrivilegedService: shizuku binder is not ready")
-                return null
-            }
-            return serviceMutex.withLock {
-                cachedService?.takeIf { it.asBinder().pingBinder() }?.let { return it }
-
-                val deferred = CompletableDeferred<INetForceService?>()
-                pendingBind = deferred
-                try {
-                    Shizuku.bindUserService(newUserServiceArgs(context), connection)
-                } catch (t: Throwable) {
-                    pendingBind = null
-                    Log.e(TAG, "bindUserService failed to launch", t)
-                    return null
-                }
-                val service = withTimeoutOrNull(BIND_TIMEOUT_MS) { deferred.await() }
-                pendingBind = null
-                if (service == null) {
-                    Log.w(TAG, "bindUserService timed out or returned no binder")
-                    runCatching {
-                        Shizuku.unbindUserService(newUserServiceArgs(context), connection, true)
-                    }
-                }
-                service
-            }
-        }
-
-        /** Logs a failed privileged op in the APP process so the in-app logcat
-         *  screen/export contains the reason (service-process logs are not
-         *  visible to the app's own logcat reader). Returns the message. */
-        private fun logFailure(op: String, msg: String?): String? {
-            Log.e(TAG, "$op failed: $msg")
-            return msg
-        }
-
-        // ------------------------------------------------------------ ops
-
-        /** Returns null on success, an error message on failure. */
         suspend fun overrideImsConfig(context: Context, data: Bundle): String? {
-            val args = Bundle(data)
-            val result = executePrivileged(context, PrivilegedService.OP_OVERRIDE_CONFIG, args)
-                ?: return "privileged service unavailable"
-            if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
+            val primaryArgs = Bundle(data)
+            val result = startInstrumentation(context, ImsModifier::class.java, primaryArgs, true)
+            if (result == null) {
+                Log.w(TAG, "overrideImsConfig: failed with empty result")
+                return tryOverrideWithBroker(context, data, "failed with empty result")
+            }
+            if (result.getBoolean(ImsModifier.BUNDLE_RESULT)) {
                 return null
             }
-            return logFailure(
-                "overrideImsConfig",
-                result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error"
-            )
+            val msg = result.getString(ImsModifier.BUNDLE_RESULT_MSG) ?: "unknown error"
+            // Retry via broker when persistent override is restricted or result is empty.
+            return tryOverrideWithBroker(context, data, msg)
         }
 
         suspend fun readSimInfoList(context: Context): List<SimSelection> {
-            val result = executePrivileged(context, PrivilegedService.OP_READ_SIM_LIST, Bundle())
-            if (result == null || !result.getBoolean(PrivilegedOps.BUNDLE_RESULT, false)) {
-                Log.w(TAG, "readSimInfoList failed: ${result?.getString(PrivilegedOps.BUNDLE_RESULT_MSG)}")
+            val result = startInstrumentation(context, SimReader::class.java, null, true)
+            if (result == null) {
+                Log.w(TAG, "readSimInfoList: failed with empty result")
                 return emptyList()
             }
-            @Suppress("DEPRECATION")
-            val entries: ArrayList<Bundle> =
-                result.getParcelableArrayList(PrivilegedOps.BUNDLE_SIM_LIST) ?: return emptyList()
-            if (entries.isEmpty()) {
-                // Visible in the app's own log screen - distinguishes "device has
-                // no SIMs" from a silent privileged-read miss.
-                Log.w(
-                    TAG,
-                    "readSimInfoList: empty list, service reports: " +
-                        result.getString(PrivilegedOps.BUNDLE_RESULT_MSG)
-                )
-            }
-            return entries.map { entry ->
+            val subList =
+                result.getParcelableArrayList(SimReader.BUNDLE_RESULT, SubscriptionInfo::class.java)
+            val resultList = subList?.map {
                 SimSelection(
-                    entry.getInt(PrivilegedOps.SIM_SUB_ID),
-                    entry.getString(PrivilegedOps.SIM_DISPLAY_NAME).orEmpty(),
-                    entry.getString(PrivilegedOps.SIM_CARRIER_NAME).orEmpty(),
-                    entry.getInt(PrivilegedOps.SIM_SLOT_INDEX),
-                    countryIso = entry.getString(PrivilegedOps.SIM_COUNTRY_ISO).orEmpty(),
-                    mcc = entry.getString(PrivilegedOps.SIM_MCC).orEmpty(),
-                    mnc = entry.getString(PrivilegedOps.SIM_MNC).orEmpty(),
-                    iccId = entry.getString(PrivilegedOps.SIM_ICC_ID).orEmpty(),
+                    it.subscriptionId,
+                    it.displayName.toString(),
+                    it.carrierName.toString(),
+                    it.simSlotIndex,
+                    countryIso = it.countryIso ?: "",
+                    mcc = it.mccString ?: "",
+                    mnc = it.mncString ?: "",
+                    iccId = it.iccId ?: "",
                 )
-            }
+            } ?: emptyList()
+            return resultList
         }
 
         suspend fun readCarrierConfig(
@@ -208,55 +106,66 @@ class ShizukuProvider : ShizukuProvider() {
             keys: Array<String>,
         ): Bundle? {
             val args = Bundle().apply {
-                putInt(PrivilegedOps.BUNDLE_SELECT_SIM_ID, subId)
-                putStringArray(PrivilegedOps.BUNDLE_KEYS, keys)
+                putInt(ConfigReader.BUNDLE_SELECT_SIM_ID, subId)
+                putStringArray(ConfigReader.BUNDLE_KEYS, keys)
             }
-            val result = executePrivileged(context, PrivilegedService.OP_READ_CONFIG, args)
-            if (result == null || !result.getBoolean(PrivilegedOps.BUNDLE_RESULT, false)) {
+            val result = startInstrumentation(context, ConfigReader::class.java, args, true)
+            if (result == null) return null
+            val value = result.rawValue(ConfigReader.BUNDLE_RESULT)
+            if (value == null) return null
+            if (value !is Bundle) {
+                Log.w(
+                    TAG,
+                    "readCarrierConfig: unexpected result type ${value.javaClass.name} for subId=$subId"
+                )
                 return null
             }
-            return result.getBundle(PrivilegedOps.BUNDLE_VALUES)
+            return value
         }
 
         suspend fun dumpCarrierConfig(context: Context, subId: Int): String? {
             val args = Bundle().apply {
-                putInt(PrivilegedOps.BUNDLE_SELECT_SIM_ID, subId)
+                putInt(ConfigReader.BUNDLE_SELECT_SIM_ID, subId)
+                putBoolean(ConfigReader.BUNDLE_DUMP, true)
             }
-            val result = executePrivileged(context, PrivilegedService.OP_DUMP_CONFIG, args)
-            if (result == null || !result.getBoolean(PrivilegedOps.BUNDLE_RESULT, false)) {
-                return null
-            }
-            return result.getString(PrivilegedOps.BUNDLE_DUMP_TEXT)
+            val result = startInstrumentation(context, ConfigReader::class.java, args, true)
+            return result?.getString(ConfigReader.BUNDLE_DUMP_TEXT)
         }
 
         suspend fun restartImsRegistration(context: Context, subId: Int): String? {
             val args = Bundle().apply {
-                putInt(PrivilegedOps.BUNDLE_SELECT_SIM_ID, subId)
+                putInt(ImsResetter.BUNDLE_SELECT_SIM_ID, subId)
             }
-            val result = executePrivileged(context, PrivilegedService.OP_RESET_IMS, args)
-                ?: return "privileged service unavailable"
-            return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
+            val result = startInstrumentation(context, ImsResetter::class.java, args, true)
+            if (result == null) {
+                return "failed with empty result"
+            }
+            return if (result.getBoolean(ImsResetter.BUNDLE_RESULT)) {
                 null
             } else {
-                logFailure("restartImsRegistration", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
+                result.getString(ImsResetter.BUNDLE_RESULT_MSG) ?: "unknown error"
             }
         }
 
         suspend fun readImsRegistrationStatus(context: Context, subId: Int): Boolean? {
             val args = Bundle().apply {
-                putInt(PrivilegedOps.BUNDLE_SELECT_SIM_ID, subId)
+                putInt(ImsStatusReader.BUNDLE_SELECT_SIM_ID, subId)
             }
-            val result = executePrivileged(context, PrivilegedService.OP_IMS_STATUS, args)
-                ?: return null
-            if (!result.getBoolean(PrivilegedOps.BUNDLE_RESULT, false)) {
+            val result = startInstrumentation(context, ImsStatusReader::class.java, args, true)
+            if (result == null) return null
+            val msg = result.getString(ImsStatusReader.BUNDLE_RESULT_MSG)
+            if (msg != null) {
+                Log.w(TAG, "readImsRegistrationStatus: failed for subId=$subId: $msg")
+                return null
+            }
+            val value = result.rawValue(ImsStatusReader.BUNDLE_RESULT)
+            if (value !is Boolean) {
                 Log.w(
                     TAG,
-                    "readImsRegistrationStatus failed for subId=$subId: " +
-                        result.getString(PrivilegedOps.BUNDLE_RESULT_MSG)
+                    "readImsRegistrationStatus: missing or invalid result for subId=$subId"
                 )
                 return null
             }
-            val value = result.getBoolean(PrivilegedOps.BUNDLE_STATUS_VALUE)
             Log.i(TAG, "readImsRegistrationStatus: subId=$subId registered=$value")
             return value
         }
@@ -281,43 +190,47 @@ class ShizukuProvider : ShizukuProvider() {
 
         suspend fun queryCaptivePortalConfig(context: Context): CaptivePortalConfig? {
             val args = Bundle().apply {
-                putString(PrivilegedOps.BUNDLE_ACTION, PrivilegedOps.CAPTIVE_ACTION_QUERY)
+                putString(CaptivePortalFixer.BUNDLE_ACTION, CaptivePortalFixer.actionQuery())
             }
-            val result = executePrivileged(context, PrivilegedService.OP_CAPTIVE_PORTAL, args)
-            if (result == null || !result.getBoolean(PrivilegedOps.BUNDLE_RESULT, false)) {
+            val result = startInstrumentation(context, CaptivePortalFixer::class.java, args, true)
+            if (result == null || !result.getBoolean(CaptivePortalFixer.BUNDLE_RESULT, false)) {
                 return null
             }
             return CaptivePortalConfig(
-                httpUrl = result.getString(PrivilegedOps.BUNDLE_HTTP_URL).orEmpty(),
-                httpsUrl = result.getString(PrivilegedOps.BUNDLE_HTTPS_URL).orEmpty(),
-                isCnUrl = result.getBoolean(PrivilegedOps.BUNDLE_IS_CN_URL, false),
-                isOverridden = result.getBoolean(PrivilegedOps.BUNDLE_IS_OVERRIDDEN, false)
+                httpUrl = result.getString(CaptivePortalFixer.BUNDLE_HTTP_URL).orEmpty(),
+                httpsUrl = result.getString(CaptivePortalFixer.BUNDLE_HTTPS_URL).orEmpty(),
+                isCnUrl = result.getBoolean(CaptivePortalFixer.BUNDLE_IS_CN_URL, false),
+                isOverridden = result.getBoolean(CaptivePortalFixer.BUNDLE_IS_OVERRIDDEN, false)
             )
         }
 
         suspend fun applyCaptivePortalCnUrls(context: Context): String? {
             val args = Bundle().apply {
-                putString(PrivilegedOps.BUNDLE_ACTION, PrivilegedOps.CAPTIVE_ACTION_APPLY_CN)
+                putString(CaptivePortalFixer.BUNDLE_ACTION, CaptivePortalFixer.actionApplyCn())
             }
-            val result = executePrivileged(context, PrivilegedService.OP_CAPTIVE_PORTAL, args)
-                ?: return "privileged service unavailable"
-            return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
+            val result = startInstrumentation(context, CaptivePortalFixer::class.java, args, true)
+            if (result == null) {
+                return "failed with empty result"
+            }
+            return if (result.getBoolean(CaptivePortalFixer.BUNDLE_RESULT)) {
                 null
             } else {
-                logFailure("applyCaptivePortalCnUrls", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
+                result.getString(CaptivePortalFixer.BUNDLE_RESULT_MSG) ?: "unknown error"
             }
         }
 
         suspend fun restoreCaptivePortalDefaultUrls(context: Context): String? {
             val args = Bundle().apply {
-                putString(PrivilegedOps.BUNDLE_ACTION, PrivilegedOps.CAPTIVE_ACTION_RESTORE_DEFAULT)
+                putString(CaptivePortalFixer.BUNDLE_ACTION, CaptivePortalFixer.actionRestoreDefault())
             }
-            val result = executePrivileged(context, PrivilegedService.OP_CAPTIVE_PORTAL, args)
-                ?: return "privileged service unavailable"
-            return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
+            val result = startInstrumentation(context, CaptivePortalFixer::class.java, args, true)
+            if (result == null) {
+                return "failed with empty result"
+            }
+            return if (result.getBoolean(CaptivePortalFixer.BUNDLE_RESULT)) {
                 null
             } else {
-                logFailure("restoreCaptivePortalDefaultUrls", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
+                result.getString(CaptivePortalFixer.BUNDLE_RESULT_MSG) ?: "unknown error"
             }
         }
 
@@ -327,47 +240,49 @@ class ShizukuProvider : ShizukuProvider() {
             config: ApnDraftConfig,
         ): String? {
             val args = Bundle().apply {
-                putInt(PrivilegedOps.BUNDLE_SELECT_SIM_ID, subId)
-                putString(PrivilegedOps.BUNDLE_NAME, config.name)
-                putString(PrivilegedOps.BUNDLE_APN, config.apn)
-                putString(PrivilegedOps.BUNDLE_TYPE, config.type)
-                putString(PrivilegedOps.BUNDLE_MCC, config.mcc)
-                putString(PrivilegedOps.BUNDLE_MNC, config.mnc)
+                putInt(ApnModifier.BUNDLE_SELECT_SIM_ID, subId)
+                putString(ApnModifier.BUNDLE_NAME, config.name)
+                putString(ApnModifier.BUNDLE_APN, config.apn)
+                putString(ApnModifier.BUNDLE_TYPE, config.type)
+                putString(ApnModifier.BUNDLE_MCC, config.mcc)
+                putString(ApnModifier.BUNDLE_MNC, config.mnc)
             }
-            val result = executePrivileged(context, PrivilegedService.OP_APPLY_APN, args)
-                ?: return "privileged service unavailable"
-            return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
+            val result = startInstrumentation(context, ApnModifier::class.java, args, true)
+            if (result == null) {
+                return "failed with empty result"
+            }
+            return if (result.getBoolean(ApnModifier.BUNDLE_RESULT)) {
                 null
             } else {
-                logFailure("applyApnConfig", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
+                result.getString(ApnModifier.BUNDLE_RESULT_MSG) ?: "unknown error"
             }
         }
 
         /** Returns Pair(optIn, userSetting) on success, null on failure. */
         suspend fun queryPersistentVolte(context: Context, subId: Int): Pair<Int, Int>? {
             val args = Bundle().apply {
-                putInt(PrivilegedOps.BUNDLE_SUB_ID, subId)
-                putString(PrivilegedOps.BUNDLE_ACTION, PrivilegedOps.PV_ACTION_QUERY)
+                putInt(PersistentVolteModifier.BUNDLE_SUB_ID, subId)
+                putString(PersistentVolteModifier.BUNDLE_ACTION, PersistentVolteModifier.ACTION_QUERY)
             }
-            val result = executePrivileged(context, PrivilegedService.OP_PERSISTENT_VOLTE, args)
-            if (result == null || !result.getBoolean(PrivilegedOps.BUNDLE_RESULT, false)) {
+            val result = startInstrumentation(context, PersistentVolteModifier::class.java, args, true)
+            if (result == null || !result.getBoolean(PersistentVolteModifier.BUNDLE_RESULT, false)) {
                 return null
             }
-            return result.getInt(PrivilegedOps.BUNDLE_OPT_IN, -1) to
-                result.getInt(PrivilegedOps.BUNDLE_USER_ENABLED, -1)
+            return result.getInt(PersistentVolteModifier.BUNDLE_OPT_IN, -1) to
+                result.getInt(PersistentVolteModifier.BUNDLE_USER_ENABLED, -1)
         }
 
         suspend fun enablePersistentVolte(context: Context, subId: Int): String? {
             val args = Bundle().apply {
-                putInt(PrivilegedOps.BUNDLE_SUB_ID, subId)
-                putString(PrivilegedOps.BUNDLE_ACTION, PrivilegedOps.PV_ACTION_ENABLE)
+                putInt(PersistentVolteModifier.BUNDLE_SUB_ID, subId)
+                putString(PersistentVolteModifier.BUNDLE_ACTION, PersistentVolteModifier.ACTION_ENABLE)
             }
-            val result = executePrivileged(context, PrivilegedService.OP_PERSISTENT_VOLTE, args)
-                ?: return "privileged service unavailable"
-            return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
+            val result = startInstrumentation(context, PersistentVolteModifier::class.java, args, true)
+                ?: return "failed with empty result"
+            return if (result.getBoolean(PersistentVolteModifier.BUNDLE_RESULT)) {
                 null
             } else {
-                logFailure("enablePersistentVolte", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
+                result.getString(PersistentVolteModifier.BUNDLE_RESULT_MSG) ?: "unknown error"
             }
         }
 
@@ -378,18 +293,121 @@ class ShizukuProvider : ShizukuProvider() {
             userEnabled: Int,
         ): String? {
             val args = Bundle().apply {
-                putInt(PrivilegedOps.BUNDLE_SUB_ID, subId)
-                putString(PrivilegedOps.BUNDLE_ACTION, PrivilegedOps.PV_ACTION_RESTORE)
-                putInt(PrivilegedOps.BUNDLE_OPT_IN, optIn)
-                putInt(PrivilegedOps.BUNDLE_USER_ENABLED, userEnabled)
+                putInt(PersistentVolteModifier.BUNDLE_SUB_ID, subId)
+                putString(PersistentVolteModifier.BUNDLE_ACTION, PersistentVolteModifier.ACTION_RESTORE)
+                putInt(PersistentVolteModifier.BUNDLE_OPT_IN, optIn)
+                putInt(PersistentVolteModifier.BUNDLE_USER_ENABLED, userEnabled)
             }
-            val result = executePrivileged(context, PrivilegedService.OP_PERSISTENT_VOLTE, args)
-                ?: return "privileged service unavailable"
-            return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
+            val result = startInstrumentation(context, PersistentVolteModifier::class.java, args, true)
+                ?: return "failed with empty result"
+            return if (result.getBoolean(PersistentVolteModifier.BUNDLE_RESULT)) {
                 null
             } else {
-                logFailure("restorePersistentVolte", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
+                result.getString(PersistentVolteModifier.BUNDLE_RESULT_MSG) ?: "unknown error"
             }
         }
+
+        private suspend fun startInstrumentation(
+            context: Context,
+            cls: Class<*>,
+            args: Bundle?,
+            receiveResult: Boolean,
+        ): Bundle? = instrumentationMutex.withLock {
+            // Everything below touches hidden framework APIs directly (ServiceManager,
+            // IActivityManager, IInstrumentationWatcher, UiAutomationConnection). On some
+            // devices/Android versions (e.g. Android 10) the hidden-API bypass may not be
+            // effective, in which case the runtime throws NoSuchMethodError /
+            // NoClassDefFoundError - Errors, not Exceptions. Keep all of it inside the
+            // try and catch Throwable so a failure degrades to "no result" instead of
+            // crashing the whole app.
+            try {
+                val deferredResult = CompletableDeferred<Bundle?>()
+                var watcher: IInstrumentationWatcher.Stub? = null
+                if (receiveResult) {
+                    watcher = object : IInstrumentationWatcher.Stub() {
+                        override fun instrumentationStatus(
+                            name: ComponentName?,
+                            resultCode: Int,
+                            results: Bundle?
+                        ) {
+                        }
+
+                        override fun instrumentationFinished(
+                            name: ComponentName?,
+                            resultCode: Int,
+                            results: Bundle?
+                        ) {
+                            deferredResult.complete(results)
+                        }
+                    }
+                }
+
+                val binder = ServiceManager.getService(Context.ACTIVITY_SERVICE)
+                val am = IActivityManager.Stub.asInterface(ShizukuBinderWrapper(binder))
+                val name = ComponentName(context, cls)
+                val flags = 8 // ActivityManager.INSTR_FLAG_NO_RESTART
+                val connection = UiAutomationConnection()
+                var started = false
+                try {
+                    Log.d(TAG, "startInstrumentation: call with component: $name")
+                    am.startInstrumentation(name, null, flags, args, watcher, connection, 0, null)
+                    started = true
+                    Log.i(TAG, "instrumentation started successfully")
+                    if (receiveResult) {
+                        return withTimeoutOrNull(INSTRUMENTATION_RESULT_TIMEOUT_MS) {
+                            deferredResult.await()
+                        }
+                    }
+                    return null
+                } catch (e: CancellationException) {
+                    if (started && receiveResult) {
+                        withContext(NonCancellable) {
+                            withTimeoutOrNull(INSTRUMENTATION_RESULT_TIMEOUT_MS) {
+                                deferredResult.await()
+                            }
+                        }
+                    }
+                    throw e
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (t: Throwable) {
+                Log.e(TAG, "failed to start instrumentation", t)
+                return null
+            }
+        }
+
+        private suspend fun tryOverrideWithBroker(
+            context: Context,
+            data: Bundle,
+            msg: String,
+        ): String? {
+            if (!shouldRetryWithBroker(msg)) {
+                return msg
+            }
+            val brokerArgs = Bundle(data)
+            val brokerResult =
+                startInstrumentation(context, BrokerInstrumentation::class.java, brokerArgs, true)
+            if (brokerResult == null) {
+                Log.w(TAG, "overrideImsConfig: broker failed with empty result")
+                return msg
+            }
+            if (brokerResult.getBoolean(ImsModifier.BUNDLE_RESULT)) {
+                return null
+            }
+            return brokerResult.getString(ImsModifier.BUNDLE_RESULT_MSG) ?: msg
+        }
+
+        private fun shouldRetryWithBroker(message: String): Boolean {
+            val lower = message.lowercase()
+            return lower.contains("persistent=true") ||
+                lower.contains("system app") ||
+                lower.contains("securityexception") ||
+                lower.contains("security exception") ||
+                lower.contains("empty result")
+        }
+
+        @Suppress("DEPRECATION")
+        private fun Bundle.rawValue(key: String): Any? = get(key)
     }
 }

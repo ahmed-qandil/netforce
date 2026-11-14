@@ -85,7 +85,6 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
-        aidl = true
     }
     lint {
         checkReleaseBuilds = false
