@@ -146,6 +146,14 @@ class ShizukuProvider : ShizukuProvider() {
             }
         }
 
+        /** Logs a failed privileged op in the APP process so the in-app logcat
+         *  screen/export contains the reason (service-process logs are not
+         *  visible to the app's own logcat reader). Returns the message. */
+        private fun logFailure(op: String, msg: String?): String? {
+            Log.e(TAG, "$op failed: $msg")
+            return msg
+        }
+
         // ------------------------------------------------------------ ops
 
         /** Returns null on success, an error message on failure. */
@@ -156,7 +164,10 @@ class ShizukuProvider : ShizukuProvider() {
             if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
                 return null
             }
-            return result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error"
+            return logFailure(
+                "overrideImsConfig",
+                result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error"
+            )
         }
 
         suspend fun readSimInfoList(context: Context): List<SimSelection> {
@@ -227,7 +238,7 @@ class ShizukuProvider : ShizukuProvider() {
             return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
                 null
             } else {
-                result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error"
+                logFailure("restartImsRegistration", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
             }
         }
 
@@ -293,7 +304,7 @@ class ShizukuProvider : ShizukuProvider() {
             return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
                 null
             } else {
-                result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error"
+                logFailure("applyCaptivePortalCnUrls", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
             }
         }
 
@@ -306,7 +317,7 @@ class ShizukuProvider : ShizukuProvider() {
             return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
                 null
             } else {
-                result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error"
+                logFailure("restoreCaptivePortalDefaultUrls", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
             }
         }
 
@@ -328,7 +339,7 @@ class ShizukuProvider : ShizukuProvider() {
             return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
                 null
             } else {
-                result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error"
+                logFailure("applyApnConfig", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
             }
         }
 
@@ -356,7 +367,7 @@ class ShizukuProvider : ShizukuProvider() {
             return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
                 null
             } else {
-                result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error"
+                logFailure("enablePersistentVolte", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
             }
         }
 
@@ -377,7 +388,7 @@ class ShizukuProvider : ShizukuProvider() {
             return if (result.getBoolean(PrivilegedOps.BUNDLE_RESULT)) {
                 null
             } else {
-                result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error"
+                logFailure("restorePersistentVolte", result.getString(PrivilegedOps.BUNDLE_RESULT_MSG) ?: "unknown error")
             }
         }
     }
