@@ -206,7 +206,7 @@ internal object PrivilegedOps {
             is IntArray -> bundle.putIntArray(key, value)
             is LongArray -> bundle.putLongArray(key, value)
             is DoubleArray -> bundle.putDoubleArray(key, value)
-            is BooleanArray -> bundle.putBoolean(key, value)
+            is BooleanArray -> bundle.putBooleanArray(key, value)
             is Array<*> -> if (value.isArrayOf<String>()) {
                 @Suppress("UNCHECKED_CAST")
                 bundle.putStringArray(key, value as Array<String>)
