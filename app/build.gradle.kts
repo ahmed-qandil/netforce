@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-val namespaceName = "io.github.vvb2060.ims"
-val applicationIdName = "io.github.vvb2060.ims.mod"
+val namespaceName = "com.netforce.ims"
+val applicationIdName = "com.netforce.ims"
 val gitVersionCode: Int = providers.exec {
     commandLine(
         "git",
@@ -13,7 +13,7 @@ val gitVersionCode: Int = providers.exec {
         "HEAD",
         "--count"
     )
-}.standardOutput.asText.get().trim().toInt()
+}.standardOutput.asText.get().trim().toIntOrNull() ?: 1
 val gitVersionName: String =
     providers.exec {
         commandLine(

@@ -1,4 +1,4 @@
-name: Build Arabic mod
+name: Build NetForce
 on:
   workflow_dispatch:
 
@@ -45,16 +45,16 @@ jobs:
       - name: Prepare artifacts
         run: |
           mkdir -p out
-          cp app/build/outputs/apk/release/app-release-unsigned.apk "out/CarrierIMS-v3.9.1-ar1-unsigned.apk"
-          zip -r "out/CarrierIMS-v3.9.1-ar1-source.zip" . \
+          cp app/build/outputs/apk/release/app-release-unsigned.apk "out/NetForce-v1.0.0-unsigned.apk"
+          zip -r "out/NetForce-v1.0.0-source.zip" . \
             -x ".git/*" ".gradle/*" "app/build/*" "stub/build/*" "build/*" "out/*" "local.properties" ".idea/*" "*.iml"
 
       - name: Create release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v3.9.1-ar1" \
-            --title "Carrier IMS v3.9.1-ar1 (Arabic mod)" \
-            --notes "Private Arabic mod of Carrier IMS for Pixel v3.9.1. Full Arabic UI, ads/payments/updater removed. Unsigned APK - sign before installing." \
-            "out/CarrierIMS-v3.9.1-ar1-unsigned.apk" \
-            "out/CarrierIMS-v3.9.1-ar1-source.zip"
+          gh release create "v1.0.0" \
+            --title "NetForce v1.0.0" \
+            --notes "NetForce: universal IMS enabler (VoLTE/VoWiFi/VT/VoNR/5G) for all chipsets, Android 10+, Arabic UI. Requires Shizuku. Unsigned APK - sign before installing." \
+            "out/NetForce-v1.0.0-unsigned.apk" \
+            "out/NetForce-v1.0.0-source.zip"

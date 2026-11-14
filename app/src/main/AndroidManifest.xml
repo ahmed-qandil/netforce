@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:name="io.github.vvb2060.ims.Application"
+        android:name="com.netforce.ims.Application"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:localeConfig="@xml/locales_config"
@@ -12,7 +13,7 @@
         android:theme="@style/JetpackSplashTheme">
 
         <activity
-            android:name="io.github.vvb2060.ims.ui.MainActivity"
+            android:name="com.netforce.ims.ui.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.TurbolIms">
             <intent-filter>
@@ -21,16 +22,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="io.github.vvb2060.ims.ui.LogcatActivity"
+            android:name="com.netforce.ims.ui.LogcatActivity"
             android:exported="true"
             android:theme="@style/Theme.TurbolIms" />
         <activity
-            android:name="io.github.vvb2060.ims.ui.DumpActivity"
+            android:name="com.netforce.ims.ui.DumpActivity"
             android:exported="false"
             android:theme="@style/Theme.TurbolIms" />
 
         <service
-            android:name="io.github.vvb2060.ims.tiles.SIM1VoLTETileService"
+            android:name="com.netforce.ims.tiles.SIM1VoLTETileService"
             android:exported="true"
             android:label="@string/qs_toggle_tile_title_sim_1"
             android:icon="@mipmap/ic_launcher"
@@ -41,7 +42,7 @@
             <meta-data android:name="android.service.quicksettings.TOGGLEABLE_TILE" android:value="true" />
         </service>
         <service
-            android:name="io.github.vvb2060.ims.tiles.SIM2VoLTETileService"
+            android:name="com.netforce.ims.tiles.SIM2VoLTETileService"
             android:exported="true"
             android:label="@string/qs_toggle_tile_title_sim_2"
             android:icon="@mipmap/ic_launcher"
@@ -52,7 +53,7 @@
             <meta-data android:name="android.service.quicksettings.TOGGLEABLE_TILE" android:value="true" />
         </service>
         <service
-            android:name="io.github.vvb2060.ims.tiles.SIM1IMSStatusTileService"
+            android:name="com.netforce.ims.tiles.SIM1IMSStatusTileService"
             android:exported="true"
             android:label="@string/qs_status_tile_title_sim_1"
             android:icon="@mipmap/ic_launcher"
@@ -62,7 +63,7 @@
             </intent-filter>
         </service>
         <service
-            android:name="io.github.vvb2060.ims.tiles.SIM2IMSStatusTileService"
+            android:name="com.netforce.ims.tiles.SIM2IMSStatusTileService"
             android:exported="true"
             android:label="@string/qs_status_tile_title_sim_2"
             android:icon="@mipmap/ic_launcher"
@@ -72,8 +73,17 @@
             </intent-filter>
         </service>
 
+        <receiver
+            android:name="com.netforce.ims.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <provider
-            android:name="io.github.vvb2060.ims.ShizukuProvider"
+            android:name="com.netforce.ims.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"
             android:exported="true"
             android:multiprocess="false"
@@ -90,35 +100,39 @@
     </application>
 
     <instrumentation
-        android:name="io.github.vvb2060.ims.privileged.ImsModifier"
+        android:name="com.netforce.ims.privileged.ImsModifier"
         android:label="IMS Configurator"
         android:targetPackage="${applicationId}" />
     <instrumentation
-        android:name="io.github.vvb2060.ims.privileged.SimReader"
+        android:name="com.netforce.ims.privileged.SimReader"
         android:label="SimReader"
         android:targetPackage="${applicationId}" />
     <instrumentation
-        android:name="io.github.vvb2060.ims.privileged.BrokerInstrumentation"
+        android:name="com.netforce.ims.privileged.BrokerInstrumentation"
         android:label="BrokerInstrumentation"
         android:targetPackage="${applicationId}" />
     <instrumentation
-        android:name="io.github.vvb2060.ims.privileged.ConfigReader"
+        android:name="com.netforce.ims.privileged.ConfigReader"
         android:label="ConfigReader"
         android:targetPackage="${applicationId}" />
     <instrumentation
-        android:name="io.github.vvb2060.ims.privileged.ImsStatusReader"
+        android:name="com.netforce.ims.privileged.ImsStatusReader"
         android:label="ImsStatusReader"
         android:targetPackage="${applicationId}" />
     <instrumentation
-        android:name="io.github.vvb2060.ims.privileged.ImsResetter"
+        android:name="com.netforce.ims.privileged.ImsResetter"
         android:label="ImsResetter"
         android:targetPackage="${applicationId}" />
     <instrumentation
-        android:name="io.github.vvb2060.ims.privileged.CaptivePortalFixer"
+        android:name="com.netforce.ims.privileged.CaptivePortalFixer"
         android:label="CaptivePortalFixer"
         android:targetPackage="${applicationId}" />
     <instrumentation
-        android:name="io.github.vvb2060.ims.privileged.ApnModifier"
+        android:name="com.netforce.ims.privileged.ApnModifier"
         android:label="ApnModifier"
+        android:targetPackage="${applicationId}" />
+    <instrumentation
+        android:name="com.netforce.ims.privileged.PersistentVolteModifier"
+        android:label="PersistentVolteModifier"
         android:targetPackage="${applicationId}" />
 </manifest>

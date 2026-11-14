@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Carrier IMS</string>
-    <string name="brand_name">Carrier IMS for Pixel</string>
+    <string name="app_name">NetForce</string>
+    <string name="brand_name">NetForce</string>
     <string name="brand_subtitle">نسخة معدلة من TurboIMS · أدوات المشغل وIMS</string>
     <string name="tab_ims">IMS</string>
     <string name="tab_extra">إضافات</string>
@@ -201,4 +201,41 @@
     <string name="logcat_filter">تصفية</string>
     <string name="logcat_scroll_latest">التمرير إلى الأحدث</string>
     <string name="title_filter_log_level">اختر مستوى تصفية السجل</string>
+
+    <!-- NetForce additions -->
+    <string name="vowifi_roaming">مكالمات الواي فاي أثناء التجوال</string>
+    <string name="vowifi_roaming_desc">السماح بمكالمات الواي فاي أثناء التجوال على شبكات أجنبية.</string>
+    <string name="always_show_data_rat_icon">إظهار نوع الشبكة دائما</string>
+    <string name="always_show_data_rat_icon_desc">إبقاء نوع شبكة المحمول (4G/5G) ظاهرا في شريط الحالة.</string>
+    <string name="ims_user_agent">معرّف IMS (User-Agent)</string>
+    <string name="ims_user_agent_desc">نص User-Agent مخصص يرسله نظام IMS. اتركه فارغا للوضع الافتراضي.</string>
+    <string name="vowifi_name_format">صيغة اسم مكالمات الواي فاي</string>
+    <string name="vowifi_name_format_desc">اختر شكل ظهور اسم الشبكة أثناء مكالمات الواي فاي. الصياغة تتبع لغة النظام والروم.</string>
+    <string name="vowifi_format_carrier_only">اسم الشبكة فقط</string>
+    <string name="vowifi_format_wifi_calling">الشبكة + Wi-Fi Calling</string>
+    <string name="vowifi_format_wifi">الشبكة + Wi-Fi</string>
+    <string name="vowifi_format_vowifi">الشبكة + VoWiFi</string>
+    <string name="ussd_method">طريقة اتصال USSD</string>
+    <string name="ussd_method_desc">اختر هل تستخدم طلبات USSD الشبكة العادية CS أم خدمات IMS. يحتاج دعما من الجهاز والشبكة.</string>
+    <string name="ussd_cs_preferred">الأفضلية لـ CS (رجوع لـ IMS)</string>
+    <string name="ussd_ims_preferred">الأفضلية لـ IMS (رجوع لـ CS)</string>
+    <string name="ussd_cs_only">CS فقط</string>
+    <string name="ussd_ims_only">IMS فقط</string>
+    <string name="presets_title">إعدادات جاهزة:</string>
+    <string name="preset_recommended">موصى به</string>
+    <string name="preset_egypt_lte">مصر LTE</string>
+    <string name="preset_applied">تم تطبيق الإعداد الجاهز</string>
+    <string name="country_iso_option_egypt">مصر</string>
+    <string name="persistent_volte_title">VoLTE الدائم (تجريبي)</string>
+    <string name="persistent_volte_desc">يبقي VoLTE شغالا بعد إعادة التشغيل بدون الحاجة لشيزوكو كل مرة، باستخدام خيار IMS في النظام. تجريبي: يعتمد على نظام IMS في الجهاز.</string>
+    <string name="persistent_volte_enable">تفعيل VoLTE الدائم</string>
+    <string name="persistent_volte_restore">استعادة القيمة الأصلية</string>
+    <string name="persistent_volte_query">فحص الحالة</string>
+    <string name="persistent_volte_status_on">VoLTE الدائم مفعّل</string>
+    <string name="persistent_volte_status_off">VoLTE الدائم غير مفعّل</string>
+    <string name="persistent_volte_status_unknown">الحالة غير معروفة - اضغط فحص الحالة</string>
+    <string name="persistent_volte_done">تم</string>
+    <string name="auto_restore_title">إعادة التطبيق بعد إعادة التشغيل</string>
+    <string name="auto_restore_desc">إعادة تطبيق آخر إعدادات محفوظة تلقائيا عندما يصبح شيزوكو جاهزا بعد إعادة تشغيل الجهاز. غير مفعّل افتراضيا.</string>
+    <string name="auto_restore_applied">أُعيد تطبيق الإعدادات بعد إعادة التشغيل</string>
 </resources>

@@ -1,42 +1,58 @@
-# Carrier IMS v3.9.1-ar1 - Arabic mod
+# NetForce v1.0.0 - build notes
 
-Private Arabic modification of [Carrier IMS for Pixel (TurboIMS)](https://github.com/ryfineZ/carrier-ims-for-pixel) v3.9.1 (commit 4312b5a9, Apache-2.0). Built for Ahmed Qandil.
+Base: Carrier IMS for Pixel v3.9.1 (ryfineZ/carrier-ims-for-pixel, Apache-2.0), already
+fully Arabized and de-monetized in the ahmed-qandil/carrierims-arabic v3.9.1-ar1 mod.
+Features ported from TensorIMS v4.0.2 (Mystery00) and Turbo IMS (vvb2060).
 
-## What changed
+## Identity
+- New app: applicationId com.netforce.ims, package renamed io.github.vvb2060.ims ->
+  com.netforce.ims, app name "NetForce" (English name kept, UI fully Arabic).
+- versionName 1.0.0, versionCode 1.
 
-### Arabic
-- Completed and rewrote the Arabic translation: `values-ar` now covers all 180 user-facing strings (upstream had 116 partial machine translations).
-- Translated the user-facing hardcoded Chinese text: the full 8-step network diagnostics report in `MainViewModel` (~48 strings), the network-exit risk assessment text, and 2 strings in `MainActivity`. Code comments and log tags were left as-is.
-- Fixed the locale trap: `app/build.gradle.kts` `localeFilters` listed only `en` and `zh-rCN`, which silently strips Arabic from the APK. Now `en` + `ar`.
-- Removed the other 16 machine-generated locales (de/es/fr/in/it/ja/ms/pt-rBR/pt-rPT/ru/th/tr/vi/zh-rCN/zh-rHK/zh-rTW). Only English (default) + Arabic remain.
-- TalkBack: moved the logcat screen's hardcoded English icon descriptions (Back / Clear all / Export / Filter / Scroll Latest) into string resources with Arabic translations.
+## Platform
+- minSdk 33 -> 29 (Android 10). Guards: VoNR keys API 30+, SIM country ISO override
+  API 34+ (pre-existing guards kept), persistent 3-arg overrideConfig falls back to
+  non-persistent 2-arg via reflection (pre-existing), 5G-advanced keys are plain
+  carrier-config keys (harmless on older systems). Persistent VoLTE is reflection-based
+  and fails gracefully where unsupported.
+- locales_config.xml trimmed to en+ar (was 18 locales listed while gradle already
+  stripped them); gradle localeFilters stays en+ar.
 
-### Ads, payments, tracking - full removal
-Every ad-related code path was removed:
-- Remote ad service: `AD_API_BASE_URL` (default `https://leads.3jiezhiwai.com`) and both ad-slot endpoints (`/api/sources/carrier-ims/ad-slots`, `/api/project/public-ad-slots?project_id=carrier-ims`).
-- Home-screen ad popup dialog and the cooperation ad cards, including the remote ad image loader.
-- Ad state tracking: the private `ad_state` SharedPreferences (per-ad shown/dismissed timestamps, interval re-show logic).
-- Pay-to-remove-ads: the entire DodoPay integration - `DODOPAY_SUPPORT_URL_TEMPLATE` / `DODOPAY_SUPPORT_FEED_URL` BuildConfig fields, payment WebView dialog, payment-proof verification (`/api/public/payment-proofs/<proof>`), order-cancel endpoint, `client_ref` UUID, and the `ad_free` flag.
-- Business cooperation: `BUSINESS_INTENT_BASE_URL` (same leads.3jiezhiwai.com host), the `/api/sources/carrier-ims/intents` POST endpoint, `BUSINESS_CONTACT_TEXT` / `BUSINESS_CONTACT_URL` BuildConfig fields, and the COOPERATION tab UI.
-- The SUPPORT tab ($) with donation form, payment channels and donor records feed.
-- All related strings, drawables, model classes (`CommercialAd`, `AdPlacement`, `BusinessIntentType`, `SupportRecord`, `SupportPaymentChannel`, `PaymentProofVerification`) and the `SupportRulesTest` unit tests for this code.
+## Feature ports (from TensorIMS)
+- Persistent VoLTE (experimental): new PersistentVolteModifier instrumentation +
+  PersistentVolteSettings (ProvisioningManager KEY_VOIMS_OPT_IN_STATUS + ImsMmTelManager
+  user switch + SubscriptionManager property backup/restore). UI card in Extra tab:
+  check status / enable / restore, originals backed up per SIM.
+- Re-apply after reboot: BootReceiver (BOOT_COMPLETED) waits for Shizuku, re-applies
+  the last successfully applied bundle (serialized via BundleStore). Off by default,
+  toggle in Extra tab.
+- New IMS toggles: VoWiFi roaming (carrier_default_wfc_ims_roaming_enabled_bool),
+  Wi-Fi Calling name format (wfc_spn_format_idx_int + data + flight-mode trio),
+  USSD method (carrier_ussd_method_int: CS/IMS preferred/only), IMS User-Agent
+  (ims.ims_user_agent_string), always-show-network-type
+  (always_show_data_rat_icon_bool). INTEGER feature type added end-to-end
+  (model, mapper, save/load, backup, apply, UI as labeled radio rows).
+- Quick presets row (Recommended / Egypt LTE) applying a full toggle set at once.
+- Egyptian carrier name chips (WE / Vodafone EG / Orange EG / Etisalat EG) and Egypt
+  country option (eg, MCC 602).
+- Carrier name override made live: base app hardcoded carrierName=null and excluded
+  STRING features from the UI; both fixed, so carrier name / country ISO / IMS
+  User-Agent rows render and commit.
 
-Verification: a full endpoint sweep of the remaining code shows only functional network-check URLs (Google generate_204 variants for the captive-portal fix, ipapi.co for the network-exit feature, tiktok.com for the TikTok-fix reachability check). No analytics, no tracking, no ad fetches.
+## From the Carrier IMS ar1 base (already done there)
+- Complete Arabic UI (180 strings), logcat TalkBack labels in Arabic.
+- All ads/monetization removed (ad popup API, DodoPay, business intents, support /
+  cooperation tabs), updater and issue reporter removed, About keeps only the
+  system-info card. Only functional URLs remain.
+- localeFilters en+ar, 16 locale dirs removed, signing removed (unsigned release).
 
-### Updater removed
-- In-app update check against the GitHub releases API, the update dialog, and the DownloadManager-based APK download/install flow.
-- `UpdateInstallReceiver`, `UpdateApkCleanup`, the `REQUEST_INSTALL_PACKAGES` permission, and the update-related strings/drawables.
+## Accessibility
+- Every control is a labeled switch, radio row, text field or chip - no gesture-only
+  interactions. TalkBack: all icon buttons have Arabic content descriptions; radio
+  rows use selectable+Role.RadioButton; preset/choice chips carry text labels.
 
-### Developer junk removed
-- GitHub repo and issue links in the About card, the "submit issue" action (clipboard + upstream issue page), the issue-failure log collection (`issue_failure_logs.txt` writer and its call sites), and the IssueReportHintCard. The system-info card itself (version, device, Android, patch, Shizuku status, logcat access) is kept.
-
-### Build changes
-- `versionName` is now `3.9.1-ar1` (upstream `3.9.1`); removed the release `versionNameSuffix`.
-- Removed the signing config wiring (`signing.gradle`); release builds are unsigned.
-- Deleted upstream CI workflows (push triggers); this repo builds only via manual `workflow_dispatch`.
-
-## What was NOT changed
-- `applicationId` remains `io.github.vvb2060.ims.mod`; app name stays "Carrier IMS".
-- All IMS/Shizuku functionality: feature switches, IMS registration, APN check/apply, config backup/restore, network-exit check, captive-portal fix, diagnostics, logcat viewer, Quick Settings tiles.
-- No default values of any user-toggleable setting were changed.
-- ABI filter stays `arm64-v8a` (upstream default).
+## Not ported (deferred)
+- TensorIMS embedded backend (wireless-ADB / root server): Shizuku covers the same
+  privilege; would be the v2 candidate.
+- TensorIMS draft-mode apply flow: NetForce keeps Carrier IMS' per-control immediate
+  apply, which is simpler and already verified end-to-end.

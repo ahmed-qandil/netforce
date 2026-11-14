@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Carrier IMS</string>
-    <string name="brand_name">Carrier IMS for Pixel</string>
+    <string name="app_name">NetForce</string>
+    <string name="brand_name">NetForce</string>
     <string name="brand_subtitle">TurboIMS Fork · Carrier and IMS Toolkit</string>
     <string name="tab_ims">IMS</string>
     <string name="tab_extra">Extra</string>
@@ -203,4 +203,41 @@
     <string name="logcat_filter">Filter</string>
     <string name="logcat_scroll_latest">Scroll to latest</string>
     <string name="title_filter_log_level">Select filter log level</string>
+
+    <!-- NetForce additions -->
+    <string name="vowifi_roaming">Wi-Fi Calling roaming</string>
+    <string name="vowifi_roaming_desc">Allow Wi-Fi Calling while roaming on foreign networks.</string>
+    <string name="always_show_data_rat_icon">Always show network type</string>
+    <string name="always_show_data_rat_icon_desc">Keep the cellular network type (4G/5G) visible in the status bar.</string>
+    <string name="ims_user_agent">IMS User-Agent</string>
+    <string name="ims_user_agent_desc">Custom User-Agent string sent by the IMS stack. Leave empty for the system default.</string>
+    <string name="vowifi_name_format">Wi-Fi Calling name format</string>
+    <string name="vowifi_name_format_desc">Choose how the carrier name appears during Wi-Fi Calling. The wording follows the system language and ROM.</string>
+    <string name="vowifi_format_carrier_only">Carrier name only</string>
+    <string name="vowifi_format_wifi_calling">Carrier + Wi-Fi Calling</string>
+    <string name="vowifi_format_wifi">Carrier + Wi-Fi</string>
+    <string name="vowifi_format_vowifi">Carrier + VoWiFi</string>
+    <string name="ussd_method">USSD connection method</string>
+    <string name="ussd_method_desc">Choose how USSD requests use CS or IMS. Requires support from the device and carrier.</string>
+    <string name="ussd_cs_preferred">CS preferred (fallback to IMS)</string>
+    <string name="ussd_ims_preferred">IMS preferred (fallback to CS)</string>
+    <string name="ussd_cs_only">CS only</string>
+    <string name="ussd_ims_only">IMS only</string>
+    <string name="presets_title">Quick presets:</string>
+    <string name="preset_recommended">Recommended</string>
+    <string name="preset_egypt_lte">Egypt LTE</string>
+    <string name="preset_applied">Preset applied</string>
+    <string name="country_iso_option_egypt">Egypt</string>
+    <string name="persistent_volte_title">Persistent VoLTE (experimental)</string>
+    <string name="persistent_volte_desc">Keeps VoLTE active across reboots without needing Shizuku every time, using the system IMS opt-in. Experimental: depends on the device IMS stack.</string>
+    <string name="persistent_volte_enable">Enable persistent VoLTE</string>
+    <string name="persistent_volte_restore">Restore original value</string>
+    <string name="persistent_volte_query">Check status</string>
+    <string name="persistent_volte_status_on">Persistent VoLTE is ON</string>
+    <string name="persistent_volte_status_off">Persistent VoLTE is OFF</string>
+    <string name="persistent_volte_status_unknown">Status unknown - tap Check status</string>
+    <string name="persistent_volte_done">Done</string>
+    <string name="auto_restore_title">Re-apply after reboot</string>
+    <string name="auto_restore_desc">Automatically re-apply the last saved configuration when Shizuku becomes ready after a reboot. Off by default.</string>
+    <string name="auto_restore_applied">Configuration re-applied after reboot</string>
 </resources>
