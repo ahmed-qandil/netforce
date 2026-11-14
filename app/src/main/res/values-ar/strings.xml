@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Carrier IMS</string>
+    <string name="brand_name">Carrier IMS for Pixel</string>
+    <string name="brand_subtitle">نسخة معدلة من TurboIMS · أدوات المشغل وIMS</string>
+    <string name="tab_ims">IMS</string>
+    <string name="tab_extra">إضافات</string>
+    <string name="tab_about">حول</string>
+
+    <!-- Main Screen -->
+    <string name="system_info">معلومات النظام</string>
+    <string name="current_version">الحالي: %s</string>
+    <string name="device_model">موديل الجهاز: %s</string>
+    <string name="android_version">إصدار أندرويد: %s</string>
+    <string name="security_patch_version">تاريخ التصحيح الأمني: %s</string>
+    <string name="shizuku_status">حالة Shizuku: %s</string>
+    <string name="shizuku_ready">✅ جاهز</string>
+    <string name="shizuku_not_running">❌ لا يعمل</string>
+    <string name="shizuku_no_permission">⚠️ لا توجد صلاحية</string>
+    <string name="shizuku_checking">جار الفحص…</string>
+    <string name="refresh_permission">تحديث</string>
+    <string name="request_permission">طلب الصلاحية</string>
+
+    <!-- SIM Card -->
+    <string name="sim_card">شريحة SIM</string>
+    <string name="all_sim">كل الشرائح</string>
+
+    <!-- Features -->
+    <string name="features_config">مفاتيح هذا التطبيق</string>
+    <string name="tools">أدوات</string>
+    <string name="refresh_short">تحديث</string>
+    <string name="ims_registration_status">تسجيل IMS</string>
+    <string name="ims_registration_status_desc">إذا كان IMS غير مسجل، فكل الميزات أدناه غير متاحة.</string>
+    <string name="ims_registration_status_registered_desc">IMS مسجل.</string>
+    <string name="ims_registration_status_registering_desc">جار التسجيل، ويستغرق عادة بضع ثوان.</string>
+    <string name="ims_registration_status_unknown_desc">الحالة غير معروفة. أعد المزامنة بعد قليل.</string>
+    <string name="ims_registration_status_registering">جار التسجيل</string>
+    <string name="carrier_name">اسم المشغل</string>
+    <string name="carrier_name_desc">يُستخدم لتغيير اسم المشغل الذي يظهر في النظام (مثل نص المشغل في شريط الحالة)</string>
+    <string name="country_iso">رمز الدولة ISO</string>
+    <string name="country_iso_desc">استخدم الإعدادات الجاهزة أو أدخل MCC/ISO يدويا؛ اترك MCC فارغا لتجاوز ISO فقط.</string>
+    <string name="country_iso_option_china_mainland">الصين (البر الرئيسي)</string>
+    <string name="country_iso_option_hong_kong">هونغ كونغ (الصين)</string>
+    <string name="country_iso_option_taiwan">تايوان (الصين)</string>
+    <string name="country_iso_option_us">الولايات المتحدة</string>
+    <string name="country_iso_option_japan">اليابان</string>
+    <string name="country_iso_option_uk">المملكة المتحدة</string>
+    <string name="country_iso_option_korea">كوريا الجنوبية</string>
+    <string name="country_iso_option_singapore">سنغافورة</string>
+    <string name="country_iso_option_other">مخصص (MCC + ISO يدويا)</string>
+    <string name="country_iso_option_format_mcc_iso">%1$s MCC: %2$s (ISO: %3$s)</string>
+    <string name="country_iso_option_format_iso">%1$s (ISO: %2$s)</string>
+    <string name="country_iso_current_value">الإعداد الحالي: %s</string>
+    <string name="country_iso_not_overridden">غير متجاوَز</string>
+    <string name="country_iso_current_format_mcc_only">MCC: %s</string>
+    <string name="country_iso_mcc_label">MCC</string>
+    <string name="country_iso_mcc_placeholder">مثال: 460 / 310 / 310-316</string>
+    <string name="country_iso_mnc_label">MNC (للقراءة فقط)</string>
+    <string name="country_iso_mnc_placeholder">لا يوجد MNC متاح</string>
+    <string name="country_iso_mnc_desc">MNC للشريحة الحالية، يُستخدم لبناء MCCMNC لمطابقة المشغل</string>
+    <string name="country_iso_iso_label">ISO</string>
+    <string name="country_iso_quick_pick_placeholder">اختر دولة شائعة، أو اختر "أخرى" لإدخال MCC + ISO</string>
+    <string name="country_iso_custom_placeholder">مثال: eg / us / cn</string>
+    <string name="action_logcat">السجلات</string>
+    <string name="captive_portal_fix_title">إصلاح التحقق من الشبكة</string>
+    <string name="captive_portal_fix_action">إصلاح الشبكة بنقرة واحدة</string>
+    <string name="captive_portal_fix_restore_action">استعادة الافتراضي</string>
+    <string name="captive_portal_fix_normal_action">الشبكة سليمة</string>
+    <string name="captive_portal_fix_running">جار إصلاح الشبكة…</string>
+    <string name="captive_portal_restore_running">جار استعادة عناوين التحقق الافتراضية…</string>
+    <string name="captive_portal_fix_checking">جار الفحص…</string>
+    <string name="captive_portal_fix_desc">يعالج الحالات التي تكون فيها الشبكة متصلة في الصين لكنها تظهر "مقيدة" أو بعلامة تعجب دون إنترنت.</string>
+    <string name="captive_portal_fix_status_checking">جار فحص عناوين التحقق الحالية وإمكانية الوصول للشبكة…</string>
+    <string name="captive_portal_fix_status_need_fix">قد يتعذر الوصول إلى التحقق الافتراضي. يُنصح بالإصلاح بنقرة واحدة.</string>
+    <string name="captive_portal_fix_status_restorable">عناوين التحقق الصينية (.cn) مفعلة. يمكنك استعادة إعدادات النظام الافتراضية في أي وقت.</string>
+    <string name="captive_portal_fix_status_normal">شبكة التحقق متاحة. لا حاجة للإصلاح.</string>
+    <string name="captive_portal_fix_requires_shizuku">شغل Shizuku وامنحه الصلاحية قبل تنفيذ هذا الإصلاح.</string>
+    <string name="captive_portal_fix_success">تم تطبيق إصلاح الشبكة. إذا لم تتحدث الحالة، أعد الاتصال بالشبكة وحاول مجددا.</string>
+    <string name="captive_portal_fix_failed">فشل إصلاح الشبكة: %s</string>
+    <string name="captive_portal_restore_success">تمت استعادة عناوين التحقق الافتراضية للنظام</string>
+    <string name="captive_portal_restore_failed">فشلت استعادة الافتراضي: %s</string>
+    <string name="volte">VoLTE (مكالمات 4G)</string>
+    <string name="volte_desc">تفعيل مكالمات الصوت عبر 4G (يتطلب دعم المشغل)</string>
+    <string name="vowifi">VoWiFi (مكالمات الواي فاي)</string>
+    <string name="vowifi_desc">تفعيل المكالمات عبر WiFi (يتطلب دعم المشغل)</string>
+    <string name="vt">ViLTE (مكالمات الفيديو)</string>
+    <string name="vt_desc">تفعيل مكالمات الفيديو عبر IMS (يتطلب دعم المشغل)</string>
+    <string name="vonr">VoNR (مكالمات 5G)</string>
+    <string name="vonr_desc">تفعيل مكالمات الصوت عبر 5G (يتطلب دعم المشغل)</string>
+    <string name="cross_sim">المكالمات عبر الشرائح</string>
+    <string name="cross_sim_desc">تفعيل المكالمات بين الشرائح (يتطلب دعم المشغل)</string>
+    <string name="ut">خدمات UT التكميلية</string>
+    <string name="ut_desc">تفعيل خدمات انتظار المكالمات وتحويلها (يتطلب دعم المشغل)</string>
+    <string name="_5g_nr">5G NR (NSA/SA)</string>
+    <string name="_5g_nr_desc">تفعيل شبكة 5G (غير المستقلة/المستقلة)</string>
+    <string name="_5g_thresholds">ضبط قوة إشارة 5G</string>
+    <string name="_5g_thresholds_desc">ضبط قوة إشارة 5G لتطابق حدود البر الرئيسي الصيني</string>
+    <string name="_5g_plus_icon">أيقونة 5GA/5G+</string>
+    <string name="_5g_plus_icon_desc">مواءمة مع إشارة 5GA في البر الرئيسي الصيني</string>
+    <string name="show_4g_for_lte">إظهار LTE كـ 4G</string>
+    <string name="show_4g_for_lte_desc">إظهار أيقونة 4G لبيانات LTE</string>
+    <string name="tiktok_network_fix">إصلاح انقطاع شبكة TikTok</string>
+    <string name="tiktok_network_fix_desc">لشرائح الصين فقط: التفعيل يستخدم ISO رقمي عشوائي، والإيقاف يستعيد ISO حسب ملف الشريحة الأصلي.</string>
+    <string name="tiktok_network_fix_unavailable">متاح فقط لشرائح البر الرئيسي الصيني.</string>
+    <string name="extra_requires_shizuku_title">يتطلب Shizuku</string>
+    <string name="region_compat_title">توافق المنطقة</string>
+    <string name="region_mainland_sim">شريحة صينية</string>
+    <string name="region_tiktok_applicable">إصلاح TikTok</string>
+    <string name="region_status_yes">نعم</string>
+    <string name="region_status_no">لا</string>
+    <string name="region_status_applicable">منطبق</string>
+    <string name="region_status_not_applicable">غير منطبق</string>
+    <string name="network_exit_title">فحص مخرج الشبكة</string>
+    <string name="network_exit_desc">يفحص عنوان IP العام وإمكانية الوصول للخدمات الشائعة بعد الضغط.</string>
+    <string name="network_exit_action">بدء الفحص</string>
+    <string name="network_exit_checking">جار الفحص…</string>
+    <string name="network_exit_failed">فشل الفحص: %s</string>
+    <string name="network_exit_ip">IP</string>
+    <string name="network_exit_region">المنطقة</string>
+    <string name="network_exit_org">المشغل</string>
+    <string name="network_exit_risk">المخاطر</string>
+    <string name="network_exit_services">الخدمات</string>
+    <string name="apn_sim_title">فحص APN وتطبيقه</string>
+    <string name="open_apn_settings">فتح APN</string>
+    <string name="apn_settings_open_failed">تعذر فتح إعدادات APN</string>
+    <string name="apn_auto_apply">تطبيق APN المقترح</string>
+    <string name="apn_confirm_title">تطبيق APN المقترح</string>
+    <string name="apn_name">الاسم</string>
+    <string name="apn_type">النوع</string>
+    <string name="apn_confirm_apply">تطبيق</string>
+    <string name="apn_apply_success">تم تطبيق APN</string>
+    <string name="apn_apply_failed">فشل APN: %s</string>
+    <string name="apn_draft_invalid">معلومات APN غير مكتملة: %s</string>
+    <string name="qs_guide_title">الإعدادات السريعة</string>
+    <string name="qs_guide_desc">أضف بلاطات إلى الإعدادات السريعة في أندرويد للوصول الأسرع.</string>
+    <string name="qs_add_volte_sim_1">VoLTE شريحة 1</string>
+    <string name="qs_add_ims_sim_1">IMS شريحة 1</string>
+    <string name="qs_add_volte_sim_2">VoLTE شريحة 2</string>
+    <string name="qs_add_ims_sim_2">IMS شريحة 2</string>
+    <string name="qs_tile_added">تمت إضافة البلاطة</string>
+    <string name="qs_tile_already_added">البلاطة موجودة بالفعل</string>
+    <string name="qs_tile_not_added">لم تتم إضافة البلاطة</string>
+    <string name="qs_tile_add_failed">تعذر إضافة البلاطة</string>
+    <string name="config_backup_title">نسخ احتياطي للإعدادات</string>
+    <string name="config_backup_desc">نسخ احتياطي لمفاتيح %s. لا يشمل تسجيل IMS.</string>
+    <string name="config_backup_action">نسخ الشريحة احتياطيا</string>
+    <string name="config_backup_empty">لا توجد نسخ احتياطية بعد</string>
+    <string name="config_backup_restore">استعادة</string>
+    <string name="config_backup_delete">حذف</string>
+    <string name="config_backup_saved">تم حفظ النسخة الاحتياطية</string>
+    <string name="config_backup_restored">تمت استعادة النسخة الاحتياطية</string>
+    <string name="config_backup_mismatch_title">معلومات الشريحة مختلفة</string>
+    <string name="config_backup_mismatch_message">النسخة: %1$s\nالحالية: %2$s\nهل تريد الاستعادة إلى الشريحة الحالية؟</string>
+    <string name="config_backup_restore_anyway">الاستعادة على أي حال</string>
+
+    <!-- Button -->
+    <string name="reset_config">استعادة افتراضي المشغل</string>
+    <string name="dump_config">عرض الإعدادات الكاملة</string>
+    <string name="diagnostics_menu">تشخيص الشبكة</string>
+    <string name="diagnostics_running">جار التشخيص عبر Shizuku…</string>
+    <string name="diagnostics_finished">اكتمل التشخيص</string>
+    <string name="diagnostics_empty">لا توجد نتائج تشخيص بعد</string>
+    <string name="diagnostics_failed">فشل التشخيص. أعد المحاولة.</string>
+    <string name="restore_confirm_title">تأكيد الاستعادة</string>
+    <string name="restore_confirm_message">سيؤدي هذا إلى مسح تجاوزات الشريحة الحالية واستعادة إعدادات المشغل الحالية للنظام. هل تريد المتابعة؟</string>
+    <string name="restore_confirm_action">استعادة</string>
+
+    <!-- Messages -->
+    <string name="shizuku_not_running_msg">Shizuku لا يعمل، شغل Shizuku أولا</string>
+    <string name="sim_list_refresh_failed_restart_shizuku">فشلت قراءة قائمة الشرائح، أعد تشغيل خدمة Shizuku ثم حدث مجددا</string>
+    <string name="config_success_reset_message">تمت إعادة تعيين الإعدادات!</string>
+    <string name="config_failed">فشلت الإعدادات: %s</string>
+    <string name="ims_restart_failed">فشلت إعادة تشغيل IMS: %s</string>
+    <string name="ims_register_apply_then_register">جار تطبيق الإعدادات ثم بدء تسجيل IMS…</string>
+    <string name="ims_register_apply_failed">فشل التطبيق، لم يبدأ تسجيل IMS: %s</string>
+    <string name="ims_register_success">تم تسجيل IMS</string>
+    <string name="ims_register_pending">لم يكتمل تسجيل IMS. انتقل إلى مكان بإشارة أقوى وحاول مجددا.</string>
+    <string name="ims_register_unknown">فشلت قراءة حالة IMS. حاول بعد قليل.</string>
+    <string name="select_single_sim">اختر شريحة واحدة</string>
+    <string name="update_shizuku">حدث Shizuku إلى أحدث إصدار</string>
+    <string name="sim_list_refresh">تم تحديث قائمة الشرائح</string>
+
+    <!-- Dump -->
+    <string name="dump_title">تفريغ CarrierConfig</string>
+    <string name="dump_copy">نسخ</string>
+    <string name="dump_copy_success">تم النسخ إلى الحافظة</string>
+    <string name="dump_loading">جار التحميل…</string>
+    <string name="dump_error">فشل التفريغ: %s</string>
+    <string name="dump_filter_label">تصفية (مفتاح/قيمة)</string>
+
+    <!-- QS Tiles -->
+    <string name="qs_toggle_tile_title_sim_1">مفتاح VoLTE (شريحة 1)</string>
+    <string name="qs_toggle_tile_title_sim_2">مفتاح VoLTE (شريحة 2)</string>
+    <string name="qs_status_tile_title_sim_1">حالة IMS (شريحة 1)</string>
+    <string name="qs_status_tile_title_sim_2">حالة IMS (شريحة 2)</string>
+
+    <!-- Logcat -->
+    <string name="logcat_back">رجوع</string>
+    <string name="logcat_clear_all">مسح الكل</string>
+    <string name="logcat_export">تصدير</string>
+    <string name="logcat_filter">تصفية</string>
+    <string name="logcat_scroll_latest">التمرير إلى الأحدث</string>
+    <string name="title_filter_log_level">اختر مستوى تصفية السجل</string>
+</resources>

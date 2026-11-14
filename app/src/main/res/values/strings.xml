@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Carrier IMS</string>
+    <string name="brand_name">Carrier IMS for Pixel</string>
+    <string name="brand_subtitle">TurboIMS Fork · Carrier and IMS Toolkit</string>
+    <string name="tab_ims">IMS</string>
+    <string name="tab_extra">Extra</string>
+    <string name="tab_about">About</string>
+
+    <!-- Main Screen -->
+    <string name="system_info">System Info</string>
+    <string name="current_version">Current: %s</string>
+    <string name="device_model">Device Model: %s</string>
+    <string name="android_version">Android Version: %s</string>
+    <string name="security_patch_version">Patch Date: %s</string>
+    <string name="shizuku_status">Shizuku Status: %s</string>
+    <string name="shizuku_ready">✅ Ready</string>
+    <string name="shizuku_not_running">❌ Not Running</string>
+    <string name="shizuku_no_permission">⚠️ No Permission</string>
+    <string name="shizuku_checking">Checking…</string>
+    <string name="refresh_permission">Refresh</string>
+    <string name="request_permission">Request</string>
+
+    <!-- SIM Card -->
+    <string name="sim_card">SIM Card</string>
+    <string name="all_sim">All SIM</string>
+
+    <!-- Features -->
+    <string name="features_config">Features for this apply</string>
+    <string name="tools">Tools</string>
+    <string name="refresh_short">Refresh</string>
+    <string name="ims_registration_status">IMS Registration</string>
+    <string name="ims_registration_status_desc">If IMS is unregistered, all features below are unavailable.</string>
+    <string name="ims_registration_status_registered_desc">IMS is registered.</string>
+    <string name="ims_registration_status_registering_desc">Registering, usually takes a few seconds.</string>
+    <string name="ims_registration_status_unknown_desc">Status unknown. Sync again shortly.</string>
+    <string name="ims_registration_status_registering">Registering</string>
+    <string name="carrier_name">Carrier Name</string>
+    <string name="carrier_name_desc">Used to change the carrier label shown by the system (for example, status bar carrier text)</string>
+    <string name="country_iso">Country ISO</string>
+    <string name="country_iso_desc">Use quick presets or manual MCC/ISO input; leave MCC empty to override ISO only.</string>
+    <string name="country_iso_option_china_mainland">China Mainland</string>
+    <string name="country_iso_option_hong_kong">Hong Kong, China</string>
+    <string name="country_iso_option_taiwan">Taiwan, China</string>
+    <string name="country_iso_option_us">United States</string>
+    <string name="country_iso_option_japan">Japan</string>
+    <string name="country_iso_option_uk">United Kingdom</string>
+    <string name="country_iso_option_korea">South Korea</string>
+    <string name="country_iso_option_singapore">Singapore</string>
+    <string name="country_iso_option_other">Custom (manual MCC + ISO)</string>
+    <string name="country_iso_option_format_mcc_iso">%1$s MCC: %2$s (ISO: %3$s)</string>
+    <string name="country_iso_option_format_iso">%1$s (ISO: %2$s)</string>
+    <string name="country_iso_current_value">Current setting: %s</string>
+    <string name="country_iso_not_overridden">Not overridden</string>
+    <string name="country_iso_current_format_mcc_only">MCC: %s</string>
+    <string name="country_iso_mcc_label">MCC</string>
+    <string name="country_iso_mcc_placeholder">e.g. 460 / 310 / 310-316</string>
+    <string name="country_iso_mnc_label">MNC (read-only)</string>
+    <string name="country_iso_mnc_placeholder">No MNC available</string>
+    <string name="country_iso_mnc_desc">Current SIM MNC, used to build MCCMNC for carrier matching</string>
+    <string name="country_iso_iso_label">ISO</string>
+    <string name="country_iso_quick_pick_placeholder">Pick a common country, or choose \"Other\" to input MCC + ISO</string>
+    <string name="country_iso_custom_placeholder">e.g. cn / us / 11111</string>
+    <string name="action_logcat">Logs</string>
+    <string name="captive_portal_fix_title">Network Verification Fix</string>
+    <string name="captive_portal_fix_action">One-tap Network Fix</string>
+    <string name="captive_portal_fix_restore_action">Restore Default</string>
+    <string name="captive_portal_fix_normal_action">Network OK</string>
+    <string name="captive_portal_fix_running">Fixing network…</string>
+    <string name="captive_portal_restore_running">Restoring default verification URLs…</string>
+    <string name="captive_portal_fix_checking">Checking…</string>
+    <string name="captive_portal_fix_desc">Fixes cases where network is connected in China but shows \"Restricted\" or an exclamation mark and has no internet.</string>
+    <string name="captive_portal_fix_status_checking">Checking current verification URLs and network reachability…</string>
+    <string name="captive_portal_fix_status_need_fix">Default verification may be unreachable. A one-tap fix is recommended.</string>
+    <string name="captive_portal_fix_status_restorable">China (.cn) verification URLs are active. You can restore system defaults anytime.</string>
+    <string name="captive_portal_fix_status_normal">Verification network is reachable. No fix needed.</string>
+    <string name="captive_portal_fix_requires_shizuku">Start and authorize Shizuku before running this fix.</string>
+    <string name="captive_portal_fix_success">Network fix applied. If the status does not update, reconnect the network and retry.</string>
+    <string name="captive_portal_fix_failed">Network fix failed: %s</string>
+    <string name="captive_portal_restore_success">System default verification URLs restored</string>
+    <string name="captive_portal_restore_failed">Restore default failed: %s</string>
+    <string name="volte">VoLTE (4G Voice)</string>
+    <string name="volte_desc">Enable 4G voice calls (carrier support required)</string>
+    <string name="vowifi">VoWiFi (WiFi Calling)</string>
+    <string name="vowifi_desc">Enable WiFi calling (carrier support required)</string>
+    <string name="vt">ViLTE (Video Calling)</string>
+    <string name="vt_desc">Enable IMS video calling (carrier support required)</string>
+    <string name="vonr">VoNR (5G Voice)</string>
+    <string name="vonr_desc">Enable 5G voice calls (carrier support required)</string>
+    <string name="cross_sim">Cross SIM Calling</string>
+    <string name="cross_sim_desc">Enable cross-SIM calling (carrier support required)</string>
+    <string name="ut">UT Supplementary Services</string>
+    <string name="ut_desc">Enable call waiting/forwarding services (carrier support required)</string>
+    <string name="_5g_nr">5G NR (NSA/SA)</string>
+    <string name="_5g_nr_desc">Enable 5G network (Non-Standalone/Standalone)</string>
+    <string name="_5g_thresholds">5G Signal Strength Adjust</string>
+    <string name="_5g_thresholds_desc">Adjust 5G signal strength to match China mainland thresholds</string>
+    <string name="_5g_plus_icon">5GA/5G+ Icon</string>
+    <string name="_5g_plus_icon_desc">Adapt to China mainland 5GA signal</string>
+    <string name="show_4g_for_lte">Show LTE as 4G</string>
+    <string name="show_4g_for_lte_desc">Show 4G icon for LTE data</string>
+    <string name="tiktok_network_fix">Fix TikTok No Network</string>
+    <string name="tiktok_network_fix_desc">Domestic SIM only: ON uses random numeric ISO; OFF restores country ISO by SIM home profile.</string>
+    <string name="tiktok_network_fix_unavailable">Available only for mainland China SIMs.</string>
+    <string name="extra_requires_shizuku_title">Shizuku required</string>
+    <string name="region_compat_title">Region Compatibility</string>
+    <string name="region_mainland_sim">Mainland SIM</string>
+    <string name="region_tiktok_applicable">TikTok Fix</string>
+    <string name="region_status_yes">Yes</string>
+    <string name="region_status_no">No</string>
+    <string name="region_status_applicable">Applicable</string>
+    <string name="region_status_not_applicable">Not applicable</string>
+    <string name="network_exit_title">Network Exit Check</string>
+    <string name="network_exit_desc">Checks public IP and common service reachability after you tap.</string>
+    <string name="network_exit_action">Start Check</string>
+    <string name="network_exit_checking">Checking…</string>
+    <string name="network_exit_failed">Check failed: %s</string>
+    <string name="network_exit_ip">IP</string>
+    <string name="network_exit_region">Region</string>
+    <string name="network_exit_org">Carrier</string>
+    <string name="network_exit_risk">Risk</string>
+    <string name="network_exit_services">Services</string>
+    <string name="apn_sim_title">APN Check and Apply</string>
+    <string name="open_apn_settings">Open APN</string>
+    <string name="apn_settings_open_failed">Cannot open APN settings</string>
+    <string name="apn_auto_apply">Apply Suggested APN</string>
+    <string name="apn_confirm_title">Apply Suggested APN</string>
+    <string name="apn_name">Name</string>
+    <string name="apn_type">Type</string>
+    <string name="apn_confirm_apply">Apply</string>
+    <string name="apn_apply_success">APN applied</string>
+    <string name="apn_apply_failed">APN failed: %s</string>
+    <string name="apn_draft_invalid">APN info is incomplete: %s</string>
+    <string name="qs_guide_title">Quick Settings</string>
+    <string name="qs_guide_desc">Add tiles to Android Quick Settings for faster access.</string>
+    <string name="qs_add_volte_sim_1">VoLTE SIM 1</string>
+    <string name="qs_add_ims_sim_1">IMS SIM 1</string>
+    <string name="qs_add_volte_sim_2">VoLTE SIM 2</string>
+    <string name="qs_add_ims_sim_2">IMS SIM 2</string>
+    <string name="qs_tile_added">Quick tile added</string>
+    <string name="qs_tile_already_added">Quick tile already exists</string>
+    <string name="qs_tile_not_added">Quick tile was not added</string>
+    <string name="qs_tile_add_failed">Cannot add quick tile</string>
+    <string name="config_backup_title">Config Backup</string>
+    <string name="config_backup_desc">Back up %s switch settings. IMS registration is not included.</string>
+    <string name="config_backup_action">Back Up SIM</string>
+    <string name="config_backup_empty">No backups yet</string>
+    <string name="config_backup_restore">Restore</string>
+    <string name="config_backup_delete">Delete</string>
+    <string name="config_backup_saved">Backup saved</string>
+    <string name="config_backup_restored">Backup restored</string>
+    <string name="config_backup_mismatch_title">SIM info differs</string>
+    <string name="config_backup_mismatch_message">Backup: %1$s\nCurrent: %2$s\nRestore to the current SIM?</string>
+    <string name="config_backup_restore_anyway">Restore Anyway</string>
+
+    <!-- Button -->
+    <string name="reset_config">Restore Carrier Default</string>
+    <string name="dump_config">View Full Config</string>
+    <string name="diagnostics_menu">Network Diagnostics</string>
+    <string name="diagnostics_running">Running diagnostics via Shizuku…</string>
+    <string name="diagnostics_finished">Diagnostics completed</string>
+    <string name="diagnostics_empty">No diagnostics output yet</string>
+    <string name="diagnostics_failed">Diagnostics failed. Please retry.</string>
+    <string name="restore_confirm_title">Confirm Restore</string>
+    <string name="restore_confirm_message">This clears current SIM overrides and restores current system carrier configuration. Continue?</string>
+    <string name="restore_confirm_action">Restore</string>
+
+    <!-- Tips -->
+
+    <!-- Messages -->
+    <string name="shizuku_not_running_msg">Shizuku is not running, please start Shizuku first</string>
+    <string name="sim_list_refresh_failed_restart_shizuku">SIM list read failed, please restart Shizuku service and refresh again</string>
+    <string name="config_success_reset_message">Configuration reset!</string>
+    <string name="config_failed">Configuration failed: %s</string>
+    <string name="ims_restart_failed">IMS restart failed: %s</string>
+    <string name="ims_register_apply_then_register">Applying config, then triggering IMS registration…</string>
+    <string name="ims_register_apply_failed">Apply failed, IMS registration not triggered: %s</string>
+    <string name="ims_register_success">IMS registered</string>
+    <string name="ims_register_pending">IMS registration did not complete. Move to a steadier signal area and try again.</string>
+    <string name="ims_register_unknown">IMS status read failed. Try again shortly.</string>
+    <string name="select_single_sim">Please select a single SIM</string>
+    <string name="update_shizuku">Please update Shizuku to the latest version</string>
+    <string name="sim_list_refresh">SIM list refreshed</string>
+
+    <!-- Dump -->
+    <string name="dump_title">CarrierConfig Dump</string>
+    <string name="dump_copy">Copy</string>
+    <string name="dump_copy_success">Copied to clipboard</string>
+    <string name="dump_loading">Loading…</string>
+    <string name="dump_error">Dump failed: %s</string>
+    <string name="dump_filter_label">Filter (key/value)</string>
+
+    <!-- QS Tiles -->
+    <string name="qs_toggle_tile_title_sim_1">VoLTE Toggle (SIM 1)</string>
+    <string name="qs_toggle_tile_title_sim_2">VoLTE Toggle (SIM 2)</string>
+    <string name="qs_status_tile_title_sim_1">IMS Status (SIM 1)</string>
+    <string name="qs_status_tile_title_sim_2">IMS Status (SIM 2)</string>
+
+    <!-- Logcat -->
+    <string name="logcat_back">Back</string>
+    <string name="logcat_clear_all">Clear all</string>
+    <string name="logcat_export">Export</string>
+    <string name="logcat_filter">Filter</string>
+    <string name="logcat_scroll_latest">Scroll to latest</string>
+    <string name="title_filter_log_level">Select filter log level</string>
+</resources>

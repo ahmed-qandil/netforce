@@ -1,0 +1,60 @@
+name: Build Arabic mod
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Install Android SDK cmdline-tools
+        run: |
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          curl -sSL -o /tmp/cmdtools.zip https://dl.google.com/android/repository/commandlinetools-linux-16111833_latest.zip
+          unzip -q /tmp/cmdtools.zip -d $HOME/android-sdk/cmdline-tools
+          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+
+      - name: Install SDK packages
+        run: |
+          yes | sdkmanager --licenses > /dev/null
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build unsigned release APK
+        run: ./gradlew assembleRelease
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release-unsigned.apk "out/CarrierIMS-v3.9.1-ar1-unsigned.apk"
+          zip -r "out/CarrierIMS-v3.9.1-ar1-source.zip" . \
+            -x ".git/*" ".gradle/*" "app/build/*" "stub/build/*" "build/*" "out/*" "local.properties" ".idea/*" "*.iml"
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v3.9.1-ar1" \
+            --title "Carrier IMS v3.9.1-ar1 (Arabic mod)" \
+            --notes "Private Arabic mod of Carrier IMS for Pixel v3.9.1. Full Arabic UI, ads/payments/updater removed. Unsigned APK - sign before installing." \
+            "out/CarrierIMS-v3.9.1-ar1-unsigned.apk" \
+            "out/CarrierIMS-v3.9.1-ar1-source.zip"
