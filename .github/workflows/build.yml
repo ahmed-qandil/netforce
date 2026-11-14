@@ -45,16 +45,16 @@ jobs:
       - name: Prepare artifacts
         run: |
           mkdir -p out
-          cp app/build/outputs/apk/release/app-release-unsigned.apk "out/NetForce-v1.0.2-unsigned.apk"
-          zip -r "out/NetForce-v1.0.2-source.zip" . \
+          cp app/build/outputs/apk/release/app-release-unsigned.apk "out/NetForce-v1.0.3-unsigned.apk"
+          zip -r "out/NetForce-v1.0.3-source.zip" . \
             -x ".git/*" ".gradle/*" "app/build/*" "stub/build/*" "build/*" "out/*" "local.properties" ".idea/*" "*.iml"
 
       - name: Create release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v1.0.2" \
-            --title "NetForce v1.0.2" \
+          gh release create "v1.0.3" \
+            --title "NetForce v1.0.3" \
             --notes "NetForce: universal IMS enabler (VoLTE/VoWiFi/VT/VoNR/5G) for all chipsets, Android 10+, Arabic UI. Requires Shizuku. Unsigned APK - sign before installing." \
-            "out/NetForce-v1.0.2-unsigned.apk" \
-            "out/NetForce-v1.0.2-source.zip"
+            "out/NetForce-v1.0.3-unsigned.apk" \
+            "out/NetForce-v1.0.3-source.zip"

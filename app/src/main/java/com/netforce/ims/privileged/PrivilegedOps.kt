@@ -109,13 +109,17 @@ internal object PrivilegedOps {
     fun readSimList(context: Context): Bundle = try {
         // SubscriptionManager works for shell without extra delegation (proven on
         // EMUI 10 / Android 10); the ISub path is tried first on API 30+ where
-        // TelephonyFrameworkInitializer exists.
-        val resultList = readByISub() ?: run {
+        // TelephonyFrameworkInitializer exists. An EMPTY ISub result is also
+        // treated as a miss: on some newer builds it returns nothing for shell
+        // instead of throwing, which would hide the working fallback.
+        var source = "isub"
+        val resultList = readByISub()?.takeIf { it.isNotEmpty() } ?: run {
+            source = "subscription_manager"
             val sm =
                 context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
             sm.activeSubscriptionInfoList ?: emptyList()
         }
-        Log.i(TAG, "read sim info list size: ${resultList.size}")
+        Log.i(TAG, "read sim info list size: ${resultList.size} source=$source")
         val entries = ArrayList<Bundle>(resultList.size)
         for (info in resultList) {
             entries.add(Bundle().apply {
@@ -129,7 +133,14 @@ internal object PrivilegedOps {
                 putString(SIM_ICC_ID, info.iccId ?: "")
             })
         }
-        ok().apply { putParcelableArrayList(BUNDLE_SIM_LIST, entries) }
+        ok().apply {
+            putParcelableArrayList(BUNDLE_SIM_LIST, entries)
+            if (entries.isEmpty()) {
+                // Informational, not a failure: lets the app tell "no SIMs on the
+                // device" apart from "read silently returned nothing".
+                putString(BUNDLE_RESULT_MSG, "no active subscriptions (source=$source)")
+            }
+        }
     } catch (t: Throwable) {
         Log.e(TAG, "readSimList failed", t)
         fail(t)
@@ -267,6 +278,7 @@ internal object PrivilegedOps {
         valuesBundle.remove(BUNDLE_COUNTRY_MNC_HINT)
 
         val subIds = activeSubIds(context, selectedSubId)
+        require(subIds.isNotEmpty()) { "no active SIM on device" }
         val baseValues = if (reset) null else toPersistableBundle(valuesBundle)
         for (subId in subIds) {
             val values = baseValues?.let { PersistableBundle(it) }

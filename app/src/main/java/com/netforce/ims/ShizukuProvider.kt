@@ -168,6 +168,15 @@ class ShizukuProvider : ShizukuProvider() {
             @Suppress("DEPRECATION")
             val entries: ArrayList<Bundle> =
                 result.getParcelableArrayList(PrivilegedOps.BUNDLE_SIM_LIST) ?: return emptyList()
+            if (entries.isEmpty()) {
+                // Visible in the app's own log screen - distinguishes "device has
+                // no SIMs" from a silent privileged-read miss.
+                Log.w(
+                    TAG,
+                    "readSimInfoList: empty list, service reports: " +
+                        result.getString(PrivilegedOps.BUNDLE_RESULT_MSG)
+                )
+            }
             return entries.map { entry ->
                 SimSelection(
                     entry.getInt(PrivilegedOps.SIM_SUB_ID),
