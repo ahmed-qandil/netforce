@@ -34,7 +34,18 @@ import rikka.shizuku.ShizukuProvider
 
 class ShizukuProvider : ShizukuProvider() {
     override fun onCreate(): Boolean {
-        LSPass.setHiddenApiExemptions("")
+        // Best-effort hidden API exemption; never crash process start on devices
+        // where LSPass (LSPosed daemon) is unavailable.
+        try {
+            LSPass.setHiddenApiExemptions("")
+        } catch (t: Throwable) {
+            Log.w(TAG, "LSPass.setHiddenApiExemptions failed, trying HiddenApiBypass", t)
+            try {
+                org.lsposed.hiddenapibypass.HiddenApiBypass.addHiddenApiExemptions("")
+            } catch (t2: Throwable) {
+                Log.w(TAG, "HiddenApiBypass.addHiddenApiExemptions failed", t2)
+            }
+        }
         // 不再自动触发，只在用户手动点击"应用配置"时才执行
         return super.onCreate()
     }
@@ -302,55 +313,66 @@ class ShizukuProvider : ShizukuProvider() {
             args: Bundle?,
             receiveResult: Boolean,
         ): Bundle? = instrumentationMutex.withLock {
-            val deferredResult = CompletableDeferred<Bundle?>()
-            var watcher: IInstrumentationWatcher.Stub? = null
-            if (receiveResult) {
-                watcher = object : IInstrumentationWatcher.Stub() {
-                    override fun instrumentationStatus(
-                        name: ComponentName?,
-                        resultCode: Int,
-                        results: Bundle?
-                    ) {
-                    }
-
-                    override fun instrumentationFinished(
-                        name: ComponentName?,
-                        resultCode: Int,
-                        results: Bundle?
-                    ) {
-                        deferredResult.complete(results)
-                    }
-                }
-            }
-
-            val binder = ServiceManager.getService(Context.ACTIVITY_SERVICE)
-            val am = IActivityManager.Stub.asInterface(ShizukuBinderWrapper(binder))
-            val name = ComponentName(context, cls)
-            val flags = 8 // ActivityManager.INSTR_FLAG_NO_RESTART
-            val connection = UiAutomationConnection()
-            var started = false
+            // Everything below touches hidden framework APIs directly (ServiceManager,
+            // IActivityManager, IInstrumentationWatcher, UiAutomationConnection). On some
+            // devices/Android versions (e.g. Android 10) the hidden-API bypass may not be
+            // effective, in which case the runtime throws NoSuchMethodError /
+            // NoClassDefFoundError - Errors, not Exceptions. Keep all of it inside the
+            // try and catch Throwable so a failure degrades to "no result" instead of
+            // crashing the whole app.
             try {
-                Log.d(TAG, "startInstrumentation: call with component: $name")
-                am.startInstrumentation(name, null, flags, args, watcher, connection, 0, null)
-                started = true
-                Log.i(TAG, "instrumentation started successfully")
+                val deferredResult = CompletableDeferred<Bundle?>()
+                var watcher: IInstrumentationWatcher.Stub? = null
                 if (receiveResult) {
-                    return withTimeoutOrNull(INSTRUMENTATION_RESULT_TIMEOUT_MS) {
-                        deferredResult.await()
-                    }
-                }
-                return null
-            } catch (e: CancellationException) {
-                if (started && receiveResult) {
-                    withContext(NonCancellable) {
-                        withTimeoutOrNull(INSTRUMENTATION_RESULT_TIMEOUT_MS) {
-                            deferredResult.await()
+                    watcher = object : IInstrumentationWatcher.Stub() {
+                        override fun instrumentationStatus(
+                            name: ComponentName?,
+                            resultCode: Int,
+                            results: Bundle?
+                        ) {
+                        }
+
+                        override fun instrumentationFinished(
+                            name: ComponentName?,
+                            resultCode: Int,
+                            results: Bundle?
+                        ) {
+                            deferredResult.complete(results)
                         }
                     }
                 }
+
+                val binder = ServiceManager.getService(Context.ACTIVITY_SERVICE)
+                val am = IActivityManager.Stub.asInterface(ShizukuBinderWrapper(binder))
+                val name = ComponentName(context, cls)
+                val flags = 8 // ActivityManager.INSTR_FLAG_NO_RESTART
+                val connection = UiAutomationConnection()
+                var started = false
+                try {
+                    Log.d(TAG, "startInstrumentation: call with component: $name")
+                    am.startInstrumentation(name, null, flags, args, watcher, connection, 0, null)
+                    started = true
+                    Log.i(TAG, "instrumentation started successfully")
+                    if (receiveResult) {
+                        return withTimeoutOrNull(INSTRUMENTATION_RESULT_TIMEOUT_MS) {
+                            deferredResult.await()
+                        }
+                    }
+                    return null
+                } catch (e: CancellationException) {
+                    if (started && receiveResult) {
+                        withContext(NonCancellable) {
+                            withTimeoutOrNull(INSTRUMENTATION_RESULT_TIMEOUT_MS) {
+                                deferredResult.await()
+                            }
+                        }
+                    }
+                    throw e
+                }
+            } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
-                Log.e(TAG, "failed to start instrumentation", e)
+            } catch (t: Throwable) {
+                Log.e(TAG, "failed to start instrumentation", t)
                 return null
             }
         }

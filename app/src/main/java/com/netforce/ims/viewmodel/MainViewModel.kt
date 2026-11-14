@@ -251,10 +251,12 @@ class MainViewModel(private val application: Application) : AndroidViewModel(app
                         _allSimList.value.all { it.subId == -1 }
                     )
             ) {
-                loadSimListInternal()
+                runCatching { loadSimListInternal() }
+                    .onFailure { Log.w(TAG, "loadSimListInternal failed", it) }
             }
             if (status == ShizukuStatus.READY) {
-                maybeRestoreSavedConfigurationAfterBoot()
+                runCatching { maybeRestoreSavedConfigurationAfterBoot() }
+                    .onFailure { Log.w(TAG, "maybeRestoreSavedConfigurationAfterBoot failed", it) }
             }
         }
     }
@@ -312,7 +314,11 @@ class MainViewModel(private val application: Application) : AndroidViewModel(app
         val retryCount = if (shizukuReady) 3 else 1
         var simInfoList: List<SimSelection> = emptyList()
         for (attempt in 0 until retryCount) {
-            simInfoList = ShizukuProvider.readSimInfoList(application)
+            simInfoList = runCatching { ShizukuProvider.readSimInfoList(application) }
+                .getOrElse {
+                    Log.w(TAG, "readSimInfoList failed", it)
+                    emptyList()
+                }
             if (simInfoList.isNotEmpty()) {
                 break
             }
@@ -564,17 +570,22 @@ class MainViewModel(private val application: Application) : AndroidViewModel(app
 
     suspend fun loadCurrentConfiguration(subId: Int): Map<Feature, FeatureValue>? {
         if (subId < 0) return null
-        val bundle = ShizukuProvider.readCarrierConfig(
-            application,
-            subId,
-            FeatureConfigMapper.readKeys
-        ) ?: return null
-        return FeatureConfigMapper.fromBundle(bundle)
+        return runCatching {
+            val bundle = ShizukuProvider.readCarrierConfig(
+                application,
+                subId,
+                FeatureConfigMapper.readKeys
+            ) ?: return@runCatching null
+            FeatureConfigMapper.fromBundle(bundle)
+        }.onFailure { Log.w(TAG, "loadCurrentConfiguration failed for subId=$subId", it) }
+            .getOrNull()
     }
 
     suspend fun readImsRegistrationStatus(subId: Int): Boolean? {
         if (subId < 0) return null
-        return ShizukuProvider.readImsRegistrationStatus(application, subId)
+        return runCatching { ShizukuProvider.readImsRegistrationStatus(application, subId) }
+            .onFailure { Log.w(TAG, "readImsRegistrationStatus failed for subId=$subId", it) }
+            .getOrNull()
     }
 
     suspend fun registerIms(subId: Int): ImsRegisterResult {
@@ -615,7 +626,9 @@ class MainViewModel(private val application: Application) : AndroidViewModel(app
     }
 
     suspend fun queryCaptivePortalFixState(): CaptivePortalFixState? {
-        val config = ShizukuProvider.queryCaptivePortalConfig(application) ?: return null
+        val config = runCatching { ShizukuProvider.queryCaptivePortalConfig(application) }
+            .onFailure { Log.w(TAG, "queryCaptivePortalConfig failed", it) }
+            .getOrNull() ?: return null
         val currentConfigReachable = isPortalConfigReachable(config.httpUrl, config.httpsUrl)
         val mode = when {
             config.isOverridden && currentConfigReachable -> CaptivePortalFixMode.CAN_RESTORE
