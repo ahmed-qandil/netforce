@@ -44,7 +44,7 @@ class BootReceiver : BroadcastReceiver() {
                     Log.w(TAG, "Shizuku not available after boot; skipping auto-restore")
                     return@launch
                 }
-                if (Shizuku.checkSelfPermission() != Shizuku.PERMISSION_GRANTED) {
+                if (Shizuku.checkSelfPermission() != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                     Log.w(TAG, "Shizuku permission not granted; skipping auto-restore")
                     return@launch
                 }
