@@ -39,3 +39,13 @@
 
 -dontwarn androidx.window.extensions.**
 -dontwarn androidx.window.sidecar.**
+# Shizuku UserService: the privileged binder class is instantiated by name by the
+# Shizuku server in a standalone process; keep its name and both constructors.
+-keep class com.netforce.ims.privileged.PrivilegedService {
+    <init>(...);
+}
+# AIDL bridge between the UI process and the privileged process.
+-keep class com.netforce.ims.INetForceService { *; }
+-keep class com.netforce.ims.INetForceService$Stub { *; }
+-keep class com.netforce.ims.INetForceService$Stub$Proxy { *; }
+-keep class com.netforce.ims.INetForceService$Default { *; }

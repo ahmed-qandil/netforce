@@ -51,6 +51,7 @@ android {
         versionName = appVersionName
         ndk {
             abiFilters.add("arm64-v8a")
+            abiFilters.add("armeabi-v7a")
         }
     }
     packaging {
@@ -84,6 +85,7 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+        aidl = true
     }
     lint {
         checkReleaseBuilds = false

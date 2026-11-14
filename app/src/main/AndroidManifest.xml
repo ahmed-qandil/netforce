@@ -99,40 +99,4 @@
         </provider>
     </application>
 
-    <instrumentation
-        android:name="com.netforce.ims.privileged.ImsModifier"
-        android:label="IMS Configurator"
-        android:targetPackage="${applicationId}" />
-    <instrumentation
-        android:name="com.netforce.ims.privileged.SimReader"
-        android:label="SimReader"
-        android:targetPackage="${applicationId}" />
-    <instrumentation
-        android:name="com.netforce.ims.privileged.BrokerInstrumentation"
-        android:label="BrokerInstrumentation"
-        android:targetPackage="${applicationId}" />
-    <instrumentation
-        android:name="com.netforce.ims.privileged.ConfigReader"
-        android:label="ConfigReader"
-        android:targetPackage="${applicationId}" />
-    <instrumentation
-        android:name="com.netforce.ims.privileged.ImsStatusReader"
-        android:label="ImsStatusReader"
-        android:targetPackage="${applicationId}" />
-    <instrumentation
-        android:name="com.netforce.ims.privileged.ImsResetter"
-        android:label="ImsResetter"
-        android:targetPackage="${applicationId}" />
-    <instrumentation
-        android:name="com.netforce.ims.privileged.CaptivePortalFixer"
-        android:label="CaptivePortalFixer"
-        android:targetPackage="${applicationId}" />
-    <instrumentation
-        android:name="com.netforce.ims.privileged.ApnModifier"
-        android:label="ApnModifier"
-        android:targetPackage="${applicationId}" />
-    <instrumentation
-        android:name="com.netforce.ims.privileged.PersistentVolteModifier"
-        android:label="PersistentVolteModifier"
-        android:targetPackage="${applicationId}" />
 </manifest>
